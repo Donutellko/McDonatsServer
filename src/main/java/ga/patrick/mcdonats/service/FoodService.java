@@ -15,17 +15,21 @@ private FoodRepository foodRepository;
 public FoodService(FoodRepository foodRepository) {
     this.foodRepository = foodRepository;
 
-    Food[] initial = new Food[] {
-            new Food("Ьургер", 119.90, "Ьургер из мяса молодых ьычков.", (int) (Math.random() * 100)),
-            new Food("Ўартошка Ўри", 49.90, "Ўартошка из солнечной РµРєС‚СЂС„РёРєР°", (int) (Math.random() * 100)),
-            new Food("Ъоъа-ъола", 69.90, "", (int) (Math.random() * 100)),
-            new Food("Їоїиїка в теїте", 79.90, "Качеїтвенный продукт прямо ї наших грядок.", (int) (Math.random() * 100)),
-            new Food("Wороженое с wалиной", 24.90, "Охладит ваш пыл жаркиw летоw.", (int) (Math.random() * 100))
-    };
 
-    for (Food s: initial) {
+
+    if (foodRepository.count() == 0) {
+        Food[] initial = new Food[]{
+                new Food("Ьургер", 119.90, "Ьургер из мяса молодых ьычков.", (int) (Math.random() * 100)),
+                new Food("Ўартошка Ўри", 49.90, "Ўартошка из солнечной РµРєС‚СЂС„РёРєР°", (int) (Math.random() * 100)),
+                new Food("Ъоъа-ъола", 69.90, "", (int) (Math.random() * 100)),
+                new Food("Їоїиїка в теїте", 79.90, "Качеїтвенный продукт прямо ї наших грядок.", (int) (Math.random() * 100)),
+                new Food("Wороженое с wалиной", 24.90, "Охладит ваш пыл жаркиw летоw.", (int) (Math.random() * 100))
+        };
+
+        for (Food s : initial) {
 //        s.setFood(foodRepository.save(s.getFood()));
-        foodRepository.save(s);
+            foodRepository.save(s);
+        }
     }
 }
 

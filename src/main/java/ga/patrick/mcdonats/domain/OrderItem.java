@@ -1,6 +1,7 @@
 package ga.patrick.mcdonats.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -21,6 +22,7 @@ private int orderId;
 @Id
 private int foodId;
 
+@EqualsAndHashCode.Exclude
 @ManyToOne
 @JoinColumn(name = "orderId", insertable = false, updatable = false)
 Order order;

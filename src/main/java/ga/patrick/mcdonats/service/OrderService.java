@@ -52,7 +52,9 @@ public Order placeOrder(List<FoodCount> foodCounts)
     for (FoodCount fc : foodCounts) {
         Food food = foodService.findById(fc.id);
         foodService.reserve(food, fc.count);
-        orderItemRepository.save(new OrderItem(order, food, fc.count));
+        OrderItem item = new OrderItem(order, food, fc.count);
+        orderItemRepository.save(item);
+        order.add(item);
     }
 
     return orderRepository.save(order);

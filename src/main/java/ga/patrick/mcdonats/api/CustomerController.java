@@ -38,11 +38,12 @@ public List<Food> getFoods() {
  * food in Food. Client needs to retrieve the list of food again to see the limits.
  */
 @PostMapping("/order")
-public ResponseEntity placeOrder(@RequestBody List<OrderService.FoodCount> foodCounts) {
-    Object response;
+public ResponseEntity<String> placeOrder(@RequestBody List<OrderService.FoodCount> foodCounts) {
+    String response;
     HttpStatus status = HttpStatus.OK;
     try {
-        response = orderService.placeOrder(foodCounts);
+        Order order = orderService.placeOrder(foodCounts);
+        response = order.getCheque();
     } catch (OrderService.EmptyOrderException e) {
         status = HttpStatus.UNPROCESSABLE_ENTITY;
         response = "В заказе нет блюд!";

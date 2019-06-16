@@ -1,10 +1,14 @@
 package ga.patrick.mcdonats.domain;
 
 import ga.patrick.mcdonats.service.OrderService;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,8 +37,10 @@ String code;
 /**
  * Summary price of whole order at the moment, when it was made.
  * Prices of each individual item in the order at the moment is considered not important.
+ * This value is updated in
  */
-double price;
+@Setter(AccessLevel.PRIVATE)
+private double price;
 
 
 /**
@@ -72,13 +78,60 @@ Staff staff;
 
 /** Ordered items. */
 @OneToMany(mappedBy = "order")
-Set<OrderItem> items = new HashSet<>();
+private Set<OrderItem> items = new HashSet<>();
+
+public void add(OrderItem item) {
+    items.add(item);
+    price += item.count * item.food.price;
+}
+
+/**
+ * Setter for order items. Creates a new set from array.
+ * This is done so items cannot be changed from outside, invalidating the price.
+ *
+ * @param items Iterable collection of OrderItem.
+ */
+public void setItems(Iterable<OrderItem> items) {
+    this.items = new HashSet<>();
+    for (OrderItem i: items) add(i);
+}
+
+/**
+ * Get list of orders as an array.
+ * so the list won't be changed from outside the class.
+ *
+ * @return array of order items.
+ */
+public OrderItem[] getItems() {
+    return items.toArray(new OrderItem[0]);
+}
 
 /**
  * Set an end date and time of an order to current time.
  */
 public void end() {
     setEnd(LocalDateTime.now());
+}
+
+/**
+ * Used to print cheques.
+ * Cheque contains order id and code, all items, price sum and date of order.
+ *
+ * @return
+ */
+public String getCheque() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Заказ №").append(orderId)
+            .append("\nВаш код для получения заказа: ").append(code);
+    for (OrderItem i : items) {
+        sb.append("\n\n").append(i.food.title).append(":\n")
+                .append("    ").append(i.count).append(" * ").append(i.food.price)
+                .append(" = ").append(i.count * i.food.price);
+    }
+
+    sb.append("\n\nИТОГО: ").append(price)
+            .append("\nДата: ").append(start.format(DateTimeFormatter.ofPattern("uuuu.MM.dd kk:mm")));
+    return sb.toString();
 }
 
 
