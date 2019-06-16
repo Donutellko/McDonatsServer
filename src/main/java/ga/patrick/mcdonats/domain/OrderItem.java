@@ -1,6 +1,7 @@
 package ga.patrick.mcdonats.domain;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,20 +11,41 @@ import java.io.Serializable;
  */
 @Data
 @Entity
+@NoArgsConstructor
 @IdClass(OrderItem.OrderItemId.class)
 public class OrderItem {
 
 @Id
-@ManyToOne
-@JoinColumn(name = "order_id")
-Order order;
+private int orderId;
 
 @Id
+private int foodId;
+
 @ManyToOne
-@JoinColumn(name = "food_id")
+@JoinColumn(name = "orderId", insertable = false, updatable = false)
+Order order;
+
+@ManyToOne
+@JoinColumn(name = "foodId", insertable = false, updatable = false)
 Food food;
 
 int count;
+
+public OrderItem(Order order, Food food, int count) {
+    setOrder(order);
+    setFood(food);
+    setCount(count);
+}
+
+void setOrder(Order order) {
+    this.order = order;
+    this.orderId = order.orderId;
+}
+
+void setFood(Food food) {
+    this.food = food;
+    this.foodId = food.foodId;
+}
 
 /**
  * Class that is used to link {@link OrderItem OrderItems) to {@link Order Orders}.
@@ -32,9 +54,9 @@ int count;
  * as an identifier.
  */
 @Data
-static class OrderItemId implements Serializable {
-    Order order;
-    Food food;
+public static class OrderItemId implements Serializable {
+    int orderId;
+    int foodId;
 }
 
 }

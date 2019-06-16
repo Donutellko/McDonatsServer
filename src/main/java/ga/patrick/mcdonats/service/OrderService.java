@@ -4,6 +4,7 @@ import ga.patrick.mcdonats.domain.Food;
 import ga.patrick.mcdonats.domain.Order;
 import ga.patrick.mcdonats.domain.Order.OrderStatus;
 import ga.patrick.mcdonats.domain.OrderItem;
+import ga.patrick.mcdonats.repository.OrderItemRepository;
 import ga.patrick.mcdonats.repository.OrderRepository;
 import lombok.Data;
 import org.springframework.stereotype.Service;
@@ -15,13 +16,13 @@ import java.util.List;
 public class OrderService {
 
 private final OrderRepository orderRepository;
-private final StorageService storageService;
 private final FoodService foodService;
+private final OrderItemRepository orderItemRepository;
 
-public OrderService(OrderRepository orderRepository, StorageService storageService, FoodService foodService) {
+public OrderService(OrderRepository orderRepository, FoodService foodService, OrderItemRepository orderItemRepository) {
     this.orderRepository = orderRepository;
-    this.storageService = storageService;
     this.foodService = foodService;
+    this.orderItemRepository = orderItemRepository;
 }
 
 /**
@@ -33,11 +34,11 @@ public OrderService(OrderRepository orderRepository, StorageService storageServi
  *
  * @throws EmptyOrderException                   when provided list is empty.
  * @throws FoodService.UnknownFoodException      when in provided list there is unknown food id.
- * @throws StorageService.NotEnoughFoodException when there is not enough food in storage to complete an order.
+ * @throws FoodService.NotEnoughFoodException when there is not enough food in Food to complete an order.
  *                                               Exception message contains title and id of first such food found.
  */
 public Order placeOrder(List<FoodCount> foodCounts)
-        throws EmptyOrderException, FoodService.UnknownFoodException, StorageService.NotEnoughFoodException {
+        throws EmptyOrderException, FoodService.UnknownFoodException, FoodService.NotEnoughFoodException {
 
     Order order = new Order();
     order.setCode(generateCode());
@@ -46,14 +47,15 @@ public Order placeOrder(List<FoodCount> foodCounts)
         throw new EmptyOrderException();
     }
 
+    order = orderRepository.save(order);
+
     for (FoodCount fc : foodCounts) {
         Food food = foodService.findById(fc.id);
-        storageService.reserve(food, fc.count);
+        foodService.reserve(food, fc.count);
+        orderItemRepository.save(new OrderItem(order, food, fc.count));
     }
 
-    orderRepository.save(order);
-
-    return null;
+    return orderRepository.save(order);
 }
 
 /**
@@ -80,7 +82,7 @@ private Order findOrder(int id) throws OrderNotFoundException {
  */
 private void completeOrder(Order order) {
     for (OrderItem item : order.getItems()) {
-        storageService.complete(item.getFood(), item.getCount());
+        foodService.complete(item.getFood(), item.getCount());
     }
     order.setEnd(LocalDateTime.now());
     order.setStatus(Order.OrderStatus.DONE);
@@ -145,7 +147,7 @@ public Order getOrder(int id, String code) throws OrderNotFoundException, WrongO
  * A class used to get info about orders from clients.
  */
 @Data
-public class FoodCount {
+public static class FoodCount {
     int id;
     int count;
 }

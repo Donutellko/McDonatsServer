@@ -59,7 +59,7 @@ LocalDateTime start = LocalDateTime.now();
  * * {@link OrderStatus#DONE}, {@link OrderStatus#CANCELLED_BY_STAFF CANCELLED_BY_STAFF}
  * or {@link OrderStatus#CANCELLED_BY_CLIENT CANCELLED_BY_CLIENT}, and vice versa.
  */
-LocalDateTime end = LocalDateTime.now();
+LocalDateTime end;
 
 /**
  * A staff member that was assigned for processing this order.
@@ -67,7 +67,7 @@ LocalDateTime end = LocalDateTime.now();
  * <b>not</b> {@link OrderStatus#OPEN OPEN} or {@link OrderStatus#CANCELLED_BY_STAFF CANCELLED_BY_STAFF}
  */
 @ManyToOne
-        @JoinColumn(name="username")
+@JoinColumn(name = "username")
 Staff staff;
 
 /** Ordered items. */

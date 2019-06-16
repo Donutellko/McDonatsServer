@@ -5,6 +5,7 @@ import ga.patrick.mcdonats.service.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -12,16 +13,16 @@ import java.util.List;
 public class CustomerController {
 
 private OrderService orderService;
-private StorageService storageService;
+private FoodService FoodService;
 
-public CustomerController(OrderService orderService, StorageService storageService) {
+public CustomerController(OrderService orderService, FoodService FoodService) {
     this.orderService = orderService;
-    this.storageService = storageService;
+    this.FoodService = FoodService;
 }
 
 @GetMapping("/food")
 public List<Food> getFoods() {
-    return storageService.getAllPresentFood();
+    return FoodService.getAllPresentFood();
 }
 
 /**
@@ -34,10 +35,10 @@ public List<Food> getFoods() {
  * - "В заказе нет блюд!" if list size is 0.
  * - "Неизвестный id блюда: [id]" if there is no food with such id.
  * - "Заказанного блюда ([title], id: [id]) осталось несдостаточно: [count]." if there is no such
- * food in storage. Client needs to retrieve the list of food again to see the limits.
+ * food in Food. Client needs to retrieve the list of food again to see the limits.
  */
 @PostMapping("/order")
-public ResponseEntity placeOrder(@RequestParam("order") List<OrderService.FoodCount> foodCounts) {
+public ResponseEntity placeOrder(@RequestBody List<OrderService.FoodCount> foodCounts) {
     Object response;
     HttpStatus status = HttpStatus.OK;
     try {
@@ -48,11 +49,11 @@ public ResponseEntity placeOrder(@RequestParam("order") List<OrderService.FoodCo
     } catch (FoodService.UnknownFoodException e) {
         status = HttpStatus.UNPROCESSABLE_ENTITY;
         response = "Неизвестный id блюда: " + e.getMessage();
-    } catch (StorageService.NotEnoughFoodException e) {
+    } catch (FoodService.NotEnoughFoodException e) {
         status = HttpStatus.UNPROCESSABLE_ENTITY;
-        Storage storage = e.getStorage();
+        Food food = e.getFood();
         response = String.format("Заказанного блюда (%s, id: %s) осталось недостаточно: %s.",
-                storage.getFood().getTitle(), storage.getFood().getFoodId(), storage.getCount());
+                food.getTitle(), food.getFoodId(), food.getCount());
     }
     return new ResponseEntity<>(response, status);
 }
